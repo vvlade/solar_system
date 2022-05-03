@@ -6,6 +6,7 @@
 #include <Error.h>
 #include "glm/glm.hpp"
 #include "glad/glad.h"
+#include <iostream>
 
 struct Vertex {
     glm::vec3 Position;
@@ -38,15 +39,16 @@ public:
         setupMesh();
     }
 
+
     void Draw(Shader& shader) {
         unsigned int diffuseNr = 1;
         unsigned int specularNr = 1;
         unsigned int normalNr = 1;
         unsigned int heightNr = 1;
 
-        for(unsigned int i = 0; i < textures.size(); i++) {
+        for(unsigned int i = 1; i <= textures.size(); i++) {
             glActiveTexture(GL_TEXTURE0 + i);
-            std::string name = textures[i].type;
+            std::string name = textures[i-1].type;
             std::string number;
 
             if(name == "texture_diffuse") {
@@ -62,7 +64,7 @@ public:
             }
 
             glUniform1i(glGetUniformLocation(shader.ID, (glslIdentifierPrefix + name + number).c_str()), i);
-            glBindTexture(GL_TEXTURE_2D, textures[i].id);
+            glBindTexture(GL_TEXTURE_2D, textures[i-1].id);
         }
 
         glBindVertexArray(vao);
@@ -70,6 +72,7 @@ public:
 
         // deactivating all the objects we used
         glBindVertexArray(0);
+
         glActiveTexture(GL_TEXTURE0);
     }
 private:
@@ -110,8 +113,6 @@ private:
 
         glBindVertexArray(0);
     }
-
 };
-
 
 #endif //SOLAR_SYSTEM_MESH_H
