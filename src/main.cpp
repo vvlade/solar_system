@@ -21,14 +21,14 @@ struct Orb {
     glm::vec3 Ambient = glm::vec3(0.1f);
     glm::vec3 Diffuse = glm::vec3(0.6f);
     glm::vec3 Specular = glm::vec3(0.0f);
-    glm::vec3 RotationAngle = glm::vec3(0.0f, 1.0f, 0.0f);                                                // axial tilt
+    glm::vec3 RotationAngle = glm::vec3(0.0f, 1.0f, 0.0f);       // axial tilt
     glm::vec3 RevolutionCenter = glm::vec3(0.0f);                     // the point around which the orb revolves
     glm::vec3 Size = glm::vec3(1.0f);
     glm::vec2 RevolutionRadius;
     float OrbitalInclination = 0.0f;
     float RotationSpeed = 0.0f;
     float RevolutionSpeed = 0.0f;
-    bool Revolves = true;                                                    // does the orb revolve around something
+    bool Revolves = true;                                                   // does the orb revolve around something
 };
 
 struct PointLight {
@@ -51,12 +51,12 @@ void processInput(GLFWwindow* window);
 void cursorPositionCallback(GLFWwindow* window, double posX, double posY);
 void scrollCallback(GLFWwindow* window, double offsetX, double offsetY);
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
-void setUpOrbData(Orb& o, Shader& s, PointLight& pl, bool depth);
+void setUpOrbData(Orb& o, Shader& s, PointLight& pl, bool depth = false);
 unsigned loadTexture(const char* path);
 unsigned int loadSkybox(std::vector<std::string> &faces);
 unsigned setUpTheISS();
 unsigned setUpTheSkybox();
-void renderDepthScene(Shader &s, std::vector<Orb> &os, std::vector<Model> &ms, PointLight &l);
+void renderDepthScene(Shader &shader, std::vector<Orb> &orbs, std::vector<Model> &models, PointLight &light);
 
 
 int main() {
@@ -323,10 +323,8 @@ int main() {
         sunShader.setMat4("projection", projection);
         sunShader.setMat4("view", cam.getViewMatrix());
 
-
-        // depth -> do we render depth scene or do we render a normal scene
         sun.RotationSpeed = glfwGetTime() * 20;
-        setUpOrbData(sun, sunShader, sunlight, false);
+        setUpOrbData(sun, sunShader, sunlight);
         sunModel.Draw(sunShader);
 
         // ---- PLANETS ----
@@ -341,38 +339,38 @@ int main() {
         // MERCURY
         mercury.RotationSpeed = glfwGetTime() * 20;
         mercury.RevolutionSpeed = glfwGetTime() * 10;
-        setUpOrbData(mercury, orbShader, sunlight, false);
+        setUpOrbData(mercury, orbShader, sunlight);
         mercuryModel.Draw(orbShader);
 
         // VENUS
         venus.RotationSpeed = glfwGetTime();
         venus.RevolutionSpeed = glfwGetTime();
-        setUpOrbData(venus, orbShader, sunlight, false);
+        setUpOrbData(venus, orbShader, sunlight);
         venusModel.Draw(orbShader);
 
         // EARTH
         earth.RotationSpeed = glfwGetTime();
         earth.RevolutionSpeed = glfwGetTime();
-        setUpOrbData(earth, orbShader, sunlight, false);
+        setUpOrbData(earth, orbShader, sunlight);
         earthModel.Draw(orbShader);
 
         // MOON
         moon.RotationSpeed = glfwGetTime() * 20;
         moon.RevolutionSpeed = glfwGetTime() * 20;
-        setUpOrbData(moon, orbShader, sunlight, false);
+        setUpOrbData(moon, orbShader, sunlight);
         moonModel.Draw(orbShader);
 
         // MARS
         mars.RotationSpeed = glfwGetTime() * 10;
         mars.RevolutionSpeed = glfwGetTime() * 10;
-        setUpOrbData(mars, orbShader, sunlight, false);
+        setUpOrbData(mars, orbShader, sunlight);
         marsModel.Draw(orbShader);
 
 
         // JUPITER
         jupiter.RotationSpeed = glfwGetTime();
         jupiter.RevolutionSpeed = glfwGetTime();
-        setUpOrbData(jupiter, orbShader, sunlight, false);
+        setUpOrbData(jupiter, orbShader, sunlight);
         jupiterModel.Draw(orbShader);
 
         // ---- SKYBOX ----
@@ -448,6 +446,7 @@ void scrollCallback(GLFWwindow* window, double offsetX, double offsetY) {
 // setting up the shader data to draw the planets and the sun
 //------------------------
 void setUpOrbData(Orb& o, Shader& s, PointLight& pl, bool depth) {
+    // depth == true => we don't need/have these attributes
     if(!depth) {
         s.setVec3("light.position", pl.Position);
 
@@ -650,11 +649,11 @@ unsigned loadSkybox(std::vector<std::string> &faces) {
     return textureID;
 }
 
-void renderDepthScene(Shader &s, std::vector<Orb> &os, std::vector<Model> &ms, PointLight &l) {
-    for(unsigned i = 0; i < os.size(); i++) {
-        os[i].RotationSpeed = glfwGetTime();
-        os[i].RevolutionSpeed = glfwGetTime();
-        setUpOrbData(os[i], s, l, true);
-        ms[i].Draw(s);
+void renderDepthScene(Shader &shader, std::vector<Orb> &orbs, std::vector<Model> &models, PointLight &light) {
+    for(unsigned i = 0; i < orbs.size(); i++) {
+        orbs[i].RotationSpeed = glfwGetTime();
+        orbs[i].RevolutionSpeed = glfwGetTime();
+        setUpOrbData(orbs[i], shader, light, true);
+        models[i].Draw(shader);
     }
 }

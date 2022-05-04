@@ -30,7 +30,6 @@ uniform Material material;
 uniform Light light;
 uniform vec3 ViewPos;
 uniform samplerCube depthMap;
-
 uniform float far_plane;
 
 vec3 gridSamplingDisk[20] = vec3[] (
