@@ -14,7 +14,6 @@
 #include "model.h"
 
 // FIXME: point shadows
-// i have to activeate GL_TEXTURE0 jer sam stavio u mashu da krece od 1 i da se aktivira od 1
 
 struct Orb {
     glm::vec3 Position = glm::vec3(0.0f);
