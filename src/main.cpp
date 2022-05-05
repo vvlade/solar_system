@@ -94,9 +94,7 @@ int main() {
     Shader sunShader("resources/shaders/sunVS.vs", "resources/shaders/sunFS.fs");
     Shader issShader("resources/shaders/issVS.vs", "resources/shaders/issFS.fs");
     Shader skyboxShader("resources/shaders/skyboxVS.vs", "resources/shaders/skyboxFS.fs");
-    //TODO: change/implement
-    Shader orbShader("resources/shaders/mainVS.vs", "resources/shaders/mainFS.fs");
-    Shader depthShader("resources/shaders/pointShadowDepthVS.vs", "resources/shaders/pointShadowDepthFS.fs", "resources/shaders/pointShadowDepthGS.gs");
+    Shader orbShader("resources/shaders/someVS.vs", "resources/shaders/someFS.fs");
 
     // ---- SKYBOX ----
     //-----------------
@@ -217,7 +215,14 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // TODO: set up additional data and draw the objects on the scene
+        // ---- DRAWING OBJECTS ----
+        //--------------------------
+
+        // THE ISS
+        issShader.use();
         glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        issShader.setMat4("projection", projection);
         issShader.setMat4("view", cam.getViewMatrix());
 
         glm::mat4 model = glm::mat4(1.0f);
@@ -237,10 +242,7 @@ int main() {
         glCullFace(GL_BACK);
 
 
-        // TODO: set up additional data and draw the objects on the scene
-        // ---- DRAWING OBJECTS ----
-        //--------------------------
-        //SUN
+        // SUN
         sunShader.use();
         sunShader.setMat4("projection", projection);
         sunShader.setMat4("view", cam.getViewMatrix());
@@ -276,6 +278,7 @@ int main() {
         // MOON
         moon.RotationSpeed = glfwGetTime() * 20;
         moon.RevolutionSpeed = glfwGetTime() * 20;
+        moon.RevolutionCenter = earth.Position;
         setUpOrbData(moon, orbShader, sunlight);
         moonModel.Draw(orbShader);
 

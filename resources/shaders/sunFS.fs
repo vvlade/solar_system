@@ -4,7 +4,7 @@ struct Material {
     sampler2D texture_diffuse1;
 };
 
-in vec3 TexCoords;
+in vec2 TexCoords;
 
 out vec4 FragColor;
 
