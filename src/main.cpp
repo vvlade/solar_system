@@ -91,7 +91,7 @@ int main() {
 
     // ---- SHADERS ----
     //------------------
-    Shader sunShader("resources/shaders/someVS.vs", "resources/shaders/someFS.fs");
+    Shader sunShader("resources/shaders/sunVS.vs", "resources/shaders/sunFS.fs");
     Shader issShader("resources/shaders/issVS.vs", "resources/shaders/issFS.fs");
     Shader skyboxShader("resources/shaders/skyboxVS.vs", "resources/shaders/skyboxFS.fs");
     //TODO: change/implement
