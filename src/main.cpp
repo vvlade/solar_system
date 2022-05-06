@@ -15,21 +15,27 @@
 
 struct Orb {
     glm::vec3 Position = glm::vec3(0.0f);
-    glm::vec3 Ambient = glm::vec3(0.1f);
-    glm::vec3 Diffuse = glm::vec3(0.6f);
+    glm::vec3 Ambient = glm::vec3(0.4f);
+    glm::vec3 Diffuse = glm::vec3(1.0f);
     glm::vec3 Specular = glm::vec3(0.0f);
-    glm::vec3 RotationAngle = glm::vec3(0.0f, 1.0f, 0.0f);       // axial tilt
+    glm::vec3 RotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);       // axial tilt
     glm::vec3 RevolutionCenter = glm::vec3(0.0f);                     // the point around which the orb revolves
+    glm::vec3 RevolutionCenterSmall;
     glm::vec3 Size = glm::vec3(1.0f);
+    glm::vec2 RevolutionRadiusSmall;
     glm::vec2 RevolutionRadius;
     float OrbitalInclination = 0.0f;
     float RotationSpeed = 0.0f;
     float RevolutionSpeed = 0.0f;
-    bool Revolves = true;                                                   // does the orb revolve around something
+    float RevolutionSmallSpeed = 0.0f;
+    int RevolutionNr = 0;
 };
 
 struct PointLight {
     glm::vec3 Position = glm::vec3(0.0f);
+    glm::vec3 Ambient = glm::vec3(0.1f);
+    glm::vec3 Diffuse = glm::vec3(1.0f);
+    glm::vec3 Specular = glm::vec3(1.0f);
     float Const = 1.0;
     float Linear = 0.0014;
     float Quadratic = 0.000007;
@@ -148,62 +154,97 @@ int main() {
     Model jupiterModel("resources/objects/Jupiter/Jupiter_v1_L3.123c7d3fa769-8754-46f9-8dde-2a1db30a7c4e/13905_Jupiter_V1_l3.obj");
     jupiterModel.SetShaderTextureNamePrefix("material.");
 
+    // TODO: specify revolutions
     // ---- ORBS ----
     //---------------
-    // SUN
-    Orb sun;
-    sun.Ambient = glm::vec3(1.0f);
-    sun.Diffuse = glm::vec3(0.0f);
-    sun.Specular = glm::vec3(0.0f);
-    sun.Size = glm::vec3(0.7);
-    sun.Revolves = false;
-
-    // MERCURY
-    Orb mercury;
-    mercury.Position = glm::vec3(20.0f, 0.0f, 0.0f);
-    mercury.RevolutionRadius = glm::vec2(mercury.Position.x);
-    mercury.Specular = glm::vec3(0.1f);
-    mercury.Size = glm::vec3(0.01f);
-
-    // VENUS
-    Orb venus;
-    venus.Position = glm::vec3(70.0f, 0.0f, 0.0f);
-    venus.RevolutionRadius = glm::vec2(venus.Position.x);
-    venus.Size = glm::vec3(0.1);
-
     // EARTH
     Orb earth;
-    earth.Position = glm::vec3(39.0f, 0.0f, 0.0f);
-    earth.RevolutionRadius = glm::vec2(earth.Position.x);
     earth.Size = glm::vec3(0.2);
+    earth.Position = glm::vec3(0.0f, 0.0f, 10.0f);
+    earth.RotationAxis = glm::vec3(0.5f, 1.0f, 0.0f);
 
     // MOON
     Orb moon;
-    moon.Position = glm::vec3(earth.Position.x+7, earth.Position.y, earth.Position.z);
-    moon.RevolutionRadius = glm::vec2(7.0f);
-    moon.RevolutionCenter = earth.Position;
-    moon.Size = glm::vec3(0.09);
+    moon.Position = glm::vec3(20.0f, 0.0f, 0.0f);
+    moon.RevolutionRadius = glm::vec2(moon.Position.x);
+    moon.Size = glm::vec3(0.04);
+    moon.RevolutionNr = 1;
+    moon.RotationAxis = glm::vec3(0.11f, 1.0f, 0.0f);
+
+    // MERCURY
+    Orb mercury;
+    mercury.RevolutionCenterSmall = glm::vec3(45.0f, 0.0f, 0.0f);
+    mercury.RevolutionRadiusSmall= glm::vec2(10.0f);
+    mercury.Position = glm::vec3(mercury.RevolutionCenterSmall.x+mercury.RevolutionRadiusSmall.x, mercury.RevolutionCenterSmall.y, mercury.RevolutionCenterSmall.z);
+    mercury.RevolutionRadius = glm::vec2(mercury.RevolutionCenterSmall.x);
+    mercury.Size = glm::vec3(0.01f);
+    mercury.RevolutionNr = 2;
+    mercury.RotationAxis = glm::vec3(0.08f, 1.0f, 0.0f);
+
+    // VENUS
+    Orb venus;
+    venus.RevolutionCenterSmall = glm::vec3(65.0f, 0.0f, 0.0f);
+    venus.RevolutionRadiusSmall = glm::vec2(15.0f);
+    venus.Position = glm::vec3(venus.RevolutionCenterSmall.x+venus.RevolutionRadiusSmall.x, venus.RevolutionCenterSmall.y, venus.RevolutionCenterSmall.z);
+    venus.RevolutionRadius = glm::vec2(venus.RevolutionCenterSmall.x);
+    venus.Size = glm::vec3(0.1);
+    venus.RevolutionNr = 2;
+    venus.RotationAxis = glm::vec3(0.09f, -1.0f, 0.0f);
+
+    // SUN
+    Orb sun;
+    sun.Position = glm::vec3(120.0f, 0.0f, 0.0f);
+    sun.RevolutionRadius = glm::vec2(sun.Position.x);
+    sun.Size = glm::vec3(0.7);
+    sun.RevolutionNr = 1;
+    sun.RotationAxis = glm::vec3(0.2f, 1.0f, 0.0f);
 
     // MARS
     Orb mars;
-    mars.Position = glm::vec3(50.0f, 0.0f, 0.0f);
-    mars.RevolutionRadius = glm::vec2(mars.Position.x);
-    mars.Size = glm::vec3(0.05);
+    mars.RevolutionCenterSmall = glm::vec3(150.0f, 0.0f, 0.0f);
+    mars.RevolutionRadiusSmall = glm::vec2(25.0f);
+    mars.Position = glm::vec3(mars.RevolutionCenterSmall.x+mars.RevolutionRadiusSmall.x, mars.RevolutionCenterSmall.y, mars.RevolutionCenterSmall.z);
+    mars.RevolutionRadius = glm::vec2(mars.RevolutionCenterSmall.x);
+    mars.Size = glm::vec3(0.08);
+    mars.RevolutionNr = 2;
+    mars.RotationAxis = glm::vec3(0.6f, 1.0f, 0.0f);
 
     // JUPITER
     Orb jupiter;
-    jupiter.Position = glm::vec3(90.0f, 0.0f, 0.0f);
-    jupiter.RevolutionRadius = glm::vec2(jupiter.Position.x);
-    jupiter.Size = glm::vec3(0.01f);
+    jupiter.RevolutionCenterSmall = glm::vec3(200.0f, 0.0f, 0.0f);
+    jupiter.RevolutionRadiusSmall = glm::vec2(30.0f);
+    jupiter.Position = glm::vec3(jupiter.RevolutionCenterSmall.x+jupiter.RevolutionRadiusSmall.x, jupiter.RevolutionCenterSmall.y, jupiter.RevolutionCenterSmall.z);
+    jupiter.RevolutionRadius = glm::vec2(jupiter.RevolutionCenterSmall.x);
+    jupiter.Size = glm::vec3(0.03f);
+    jupiter.RevolutionNr = 2;
+    jupiter.RotationAxis = glm::vec3(0.2f, 1.0f, 0.0f);
+
 
     // THE ISS
     unsigned issVAO = setUpTheISS();
-    issPos = glm::vec3(earth.Position.x+5, earth.Position.y, earth.Position.z);
-
-    unsigned issTexture = loadTexture("resources/textures/iss.png");
+    unsigned issDiffuse = loadTexture("resources/textures/iss5.png");
+    unsigned issSpecular = loadTexture("resources/textures/iss_specular.png");
 
     issShader.use();
-    issShader.setInt("tex0", 0);
+    issShader.setInt("material.texture_diffuse", 0);
+    issShader.setInt("material.texture_specular", 1);
+
+    // ISS data
+    issShader.setVec3("light.position", sunlight.Position);
+
+    issShader.setVec4("light.ambient", glm::vec4(sunlight.Ambient, 1.0f));
+    issShader.setVec4("light.diffuse", glm::vec4(sunlight.Diffuse, 1.0f));
+    issShader.setVec4("light.specular", glm::vec4(sunlight.Specular, 1.0f));
+    issShader.setFloat("light.constant", sunlight.Const);
+    issShader.setFloat("light.linear", sunlight.Linear);
+    issShader.setFloat("light.quadratic", sunlight.Quadratic);
+
+    issShader.setVec4("material.ambient", glm::vec4(1.0f));
+    issShader.setVec4("material.diffuse", glm::vec4(1.0f));
+    issShader.setVec4("material.specular", glm::vec4(1.0f));
+    issShader.setFloat("material.shininess", 64.0f);
+
+    issPos = glm::vec3(earth.Position.x+5, earth.Position.y, earth.Position.z);
 
     // rendering loop
     while(!glfwWindowShouldClose(window)) {
@@ -221,19 +262,26 @@ int main() {
 
         // THE ISS
         issShader.use();
-        glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
         issShader.setMat4("projection", projection);
         issShader.setMat4("view", cam.getViewMatrix());
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, issPos);
         // changing the ISS's position so it rotates around the Earth: k(r*cos() + a, r*sin() + b); y: making the ISS go up and down
-        issPos = glm::vec3(5*cos(glm::radians(glfwGetTime()*10)) + earth.Position.x, sin(glm::radians(glfwGetTime()*20)), 5*sin(glm::radians(glfwGetTime()*10)) + earth.Position.z);
+        model = glm::rotate(model, glm::radians((float)glfwGetTime()*(-50.005f)), glm::vec3(0.0f, 1.0f, 0.0f));
+        issPos = glm::vec3(5*cos(glm::radians(glfwGetTime()*20)) + earth.Position.x, sin(glm::radians(glfwGetTime()*20)), 5*sin(glm::radians(glfwGetTime()*20)) + earth.Position.z);
+        //        model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::scale(model, glm::vec3(0.5f));
         issShader.setMat4("model", model);
 
+        issShader.setVec3("ViewPos", cam.Position);
+
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, issTexture);
+        glBindTexture(GL_TEXTURE_2D, issDiffuse);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, issSpecular);
 
         glDisable(GL_CULL_FACE);
         glBindVertexArray(issVAO);
@@ -242,56 +290,65 @@ int main() {
         glCullFace(GL_BACK);
 
 
+        // ---- PLANETS ----
+        // -----------------
         // SUN
         sunShader.use();
         sunShader.setMat4("projection", projection);
         sunShader.setMat4("view", cam.getViewMatrix());
 
-        sun.RotationSpeed = glfwGetTime() * 20;
+        sun.RotationSpeed = glfwGetTime() * 2;
+        sun.RevolutionSpeed = glfwGetTime() * 5;
         setUpOrbData(sun, sunShader, sunlight);
         sunModel.Draw(sunShader);
+        sunlight.Position = sun.Position;
 
-        // ---- PLANETS ----
-        // -----------------
+
         orbShader.use();
         orbShader.setMat4("projection", projection);
         orbShader.setMat4("view", cam.getViewMatrix());
 
-        // MERCURY
-        mercury.RotationSpeed = glfwGetTime() * 20;
-        mercury.RevolutionSpeed = glfwGetTime() * 10;
-        setUpOrbData(mercury, orbShader, sunlight);
-        mercuryModel.Draw(orbShader);
-
-        // VENUS
-        venus.RotationSpeed = glfwGetTime();
-        venus.RevolutionSpeed = glfwGetTime();
-        setUpOrbData(venus, orbShader, sunlight);
-        venusModel.Draw(orbShader);
-
         // EARTH
-        earth.RotationSpeed = glfwGetTime();
-        earth.RevolutionSpeed = glfwGetTime();
+        earth.RotationSpeed = glfwGetTime()*30;
         setUpOrbData(earth, orbShader, sunlight);
         earthModel.Draw(orbShader);
 
+
         // MOON
-        moon.RotationSpeed = glfwGetTime() * 20;
-        moon.RevolutionSpeed = glfwGetTime() * 20;
-        moon.RevolutionCenter = earth.Position;
+        moon.RotationSpeed = glfwGetTime() * (-10);
+        moon.RevolutionSpeed = glfwGetTime() * 10.5;
         setUpOrbData(moon, orbShader, sunlight);
         moonModel.Draw(orbShader);
 
+
+        // MERCURY
+        mercury.RotationSpeed = glfwGetTime() * 2;
+        mercury.RevolutionSpeed = glfwGetTime() * 5;
+        mercury.RevolutionSmallSpeed = glfwGetTime() * 30;
+        setUpOrbData(mercury, orbShader, sunlight);
+        mercuryModel.Draw(orbShader);
+
+
+        // VENUS
+        venus.RotationSpeed = glfwGetTime() * 0.2;
+        venus.RevolutionSpeed = glfwGetTime() * 2;
+        venus.RevolutionSmallSpeed = glfwGetTime() * 20;
+        setUpOrbData(venus, orbShader, sunlight);
+        venusModel.Draw(orbShader);
+
+
         // MARS
-        mars.RotationSpeed = glfwGetTime() * 10;
-        mars.RevolutionSpeed = glfwGetTime() * 10;
+        mars.RotationSpeed = glfwGetTime() * 20;
+        mars.RevolutionSpeed = glfwGetTime() * 3;
+        mars.RevolutionSmallSpeed = glfwGetTime() * 25;
         setUpOrbData(mars, orbShader, sunlight);
         marsModel.Draw(orbShader);
 
 
         // JUPITER
-        jupiter.RotationSpeed = glfwGetTime();
+        jupiter.RotationSpeed = glfwGetTime() * 30;
         jupiter.RevolutionSpeed = glfwGetTime();
+        jupiter.RevolutionSmallSpeed = glfwGetTime() * 20;
         setUpOrbData(jupiter, orbShader, sunlight);
         jupiterModel.Draw(orbShader);
 
@@ -372,13 +429,16 @@ void setUpOrbData(Orb& o, Shader& s, PointLight& pl, bool depth) {
     if(!depth) {
         s.setVec3("light.position", pl.Position);
 
-        s.setVec3("light.ambient", o.Ambient);
-        s.setVec3("light.diffuse", o.Diffuse);
-        s.setVec3("light.specular", o.Specular);
+        s.setVec3("light.ambient", pl.Ambient);
+        s.setVec3("light.diffuse", pl.Diffuse);
+        s.setVec3("light.specular", pl.Specular);
         s.setFloat("light.constant", pl.Const);
         s.setFloat("light.linear", pl.Linear);
         s.setFloat("light.quadratic", pl.Quadratic);
 
+        s.setVec3("material.ambient", o.Ambient);
+        s.setVec3("material.diffuse", o.Diffuse);
+        s.setVec3("material.specular", o.Specular);
         s.setFloat("material.shininess", 32.0f);
 
         s.setVec3("ViewPos", cam.Position);
@@ -387,22 +447,39 @@ void setUpOrbData(Orb& o, Shader& s, PointLight& pl, bool depth) {
     // transformations
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, o.Position);
-    model = glm::rotate(model, glm::radians(o.RotationSpeed), o.RotationAngle);
+    model = glm::rotate(model, glm::radians(o.RotationSpeed), o.RotationAxis);
     model = glm::scale(model, o.Size);
     s.setMat4("model", model);
-    if(o.Revolves) {
-        // r*cos() + a
-        float x = o.RevolutionRadius.x*cos(glm::radians(o.RevolutionSpeed)) + o.RevolutionCenter.x;
-        float y;
-        if(o.OrbitalInclination == 0) {
-            y = 0.0;
-        }
-        else {
-            y = sin(glm::radians(o.RevolutionSpeed))/o.OrbitalInclination;
-        }
-        // r*sin() + b
-        float z = o.RevolutionRadius.y*sin(glm::radians(o.RevolutionSpeed)) + o.RevolutionCenter.z;
-        o.Position = glm::vec3(x, y, z);
+
+    float x, y, z, xp, yp, zp;
+    switch(o.RevolutionNr) {
+        case 1: {
+            x = o.RevolutionRadius.x*cos(glm::radians(o.RevolutionSpeed)) + o.RevolutionCenter.x;
+            if(o.OrbitalInclination == 0) {
+                y = 0.0;
+            }
+            else {
+                y = sin(glm::radians(o.RevolutionSpeed))/o.OrbitalInclination;
+            }
+            // r*sin() + b
+            z = o.RevolutionRadius.y*sin(glm::radians(o.RevolutionSpeed)) + o.RevolutionCenter.z;
+            o.Position = glm::vec3(x, y, z);
+        }break;
+        case 2: {
+            // big revolution
+            x = o.RevolutionRadius.x*cos(glm::radians(o.RevolutionSpeed)) + o.RevolutionCenter.x;
+            y = 0.0f;
+            z = o.RevolutionRadius.y*sin(glm::radians(o.RevolutionSpeed)) + o.RevolutionCenter.z;
+            o.RevolutionCenterSmall = glm::vec3(x, y, z);
+
+
+            // small revolution
+            xp = o.RevolutionRadiusSmall.x*cos(glm::radians(o.RevolutionSmallSpeed)) + o.RevolutionCenterSmall.x;
+            yp = 0.0f;
+            // r*sin() + b
+            zp = o.RevolutionRadiusSmall.y*sin(glm::radians(o.RevolutionSmallSpeed)) + o.RevolutionCenterSmall.z;
+            o.Position = glm::vec3(xp, yp, zp);
+        }break;
     }
 }
 //------------------------
@@ -410,14 +487,14 @@ void setUpOrbData(Orb& o, Shader& s, PointLight& pl, bool depth) {
 //------------------------
 unsigned setUpTheISS() {
     std::vector<float> vertices = {
-//            position           texture
-            -0.8f, -0.4f, 0.0f,    0.0f, 0.0f,  // 0
-            0.8f, -0.4f, 0.0f,    1.0f, 0.0f,  // 1
-            -0.8f,  0.4f, 0.0f,    0.0f, 1.0f,  // 3
+//            position                 normals          texture
+            -0.8f, -0.4f, 0.0f,    0.0f,  0.0f, 1.0f,   0.0f, 0.0f,  // 0
+             0.8f, -0.4f, 0.0f,    0.0f,  0.0f, 1.0f,   1.0f, 0.0f,  // 1
+            -0.8f,  0.4f, 0.0f,    0.0f,  0.0f, 1.0f,   0.0f, 1.0f,  // 3
 
-            0.8f, -0.4f, 0.0f,    1.0f, 0.0f,  // 1
-            0.8f,  0.4f, 0.0f,    1.0f, 1.0f,  // 2
-            -0.8f,  0.4f, 0.0f,    0.0f, 1.0f   // 3
+             0.8f, -0.4f, 0.0f,    0.0f,  0.0f, 1.0f,   1.0f, 0.0f,  // 1
+             0.8f,  0.4f, 0.0f,    0.0f,  0.0f, 1.0f,   1.0f, 1.0f,  // 2
+            -0.8f,  0.4f, 0.0f,    0.0f,  0.0f, 1.0f,   0.0f, 1.0f   // 3
     };
 
     unsigned issVBO, issVAO;
@@ -431,11 +508,14 @@ unsigned setUpTheISS() {
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
     // describing positions
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    //describing texture
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
+    //describing normals
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
+    //describing texture
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     return issVAO;
 }
