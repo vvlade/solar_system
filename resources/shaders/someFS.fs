@@ -59,6 +59,7 @@ void main() {
     vec3 ViewDir = normalize(ViewPos - FragPos);
     vec3 result = CalculateSpotLight(spotLight, normal, FragPos, ViewDir);
     result += CalculatePointLight(light, normal, FragPos, ViewDir);
+
     FragColor = vec4(result, 1.0f);
 }
 
@@ -98,18 +99,18 @@ vec3 CalculateSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir
 
 
     // attenuation
-    float distance = length(light.position - fragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
-
-    // spotlight strength
     float theta = dot(lightDir, normalize(-light.direction));
-    float epsilon = light.cutOff - light.outerCutOff;
+    float epsilon = (light.cutOff - light.outerCutOff);
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+    Diffuse *= intensity;
+    Specular *= intensity;
 
-
-    Ambient *= attenuation * intensity;
-    Diffuse *= attenuation * intensity;
-    Specular *= attenuation * intensity;
+    // attenuation
+    float distance = length(light.position - FragPos);
+    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+    Ambient *= attenuation;
+    Diffuse *= attenuation;
+    Specular *= attenuation;
 
     return (Ambient + Diffuse + Specular);
 }

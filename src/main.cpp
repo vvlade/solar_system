@@ -42,15 +42,14 @@ struct PointLight {
 };
 
 struct SpotLight {
-    glm::vec3 Position = glm::vec3(0.0f, 10.0f, 0.0f);
     glm::vec3 Ambient = glm::vec3(0.0f);
     glm::vec3 Diffuse = glm::vec3(1.0f);
     glm::vec3 Specular = glm::vec3(1.0f);
     float Const = 1.0;
     float Linear = 0.01;
     float Quadratic = 0.001;
-    float Cutoff = 2.5f;
-    float OuterCutoff = 7.5f;
+    float Cutoff = 2.0f;
+    float OuterCutoff = 1.0f;
 };
 
 
@@ -74,7 +73,7 @@ unsigned loadTexture(const char* path);
 unsigned int loadSkybox(std::vector<std::string> &faces);
 unsigned setUpTheISS();
 unsigned setUpTheSkybox();
-void setSpotlight(Shader &s, SpotLight &l);
+void setSpotlight(Shader &s, SpotLight &sl);
 
 
 int main() {
@@ -172,7 +171,6 @@ int main() {
     Model jupiterModel("resources/objects/Jupiter/Jupiter_v1_L3.123c7d3fa769-8754-46f9-8dde-2a1db30a7c4e/13905_Jupiter_V1_l3.obj");
     jupiterModel.SetShaderTextureNamePrefix("material.");
 
-    // TODO: specify revolutions
     // ---- ORBS ----
     //---------------
     // EARTH
@@ -240,27 +238,27 @@ int main() {
 
     // THE ISS
     unsigned issVAO = setUpTheISS();
-    unsigned issDiffuse = loadTexture("resources/textures/iss5.png");
+    unsigned issDiffuse = loadTexture("resources/textures/iss.png");
     unsigned issSpecular = loadTexture("resources/textures/iss_specular.png");
 
     issShader.use();
     issShader.setInt("material.texture_diffuse", 0);
     issShader.setInt("material.texture_specular", 1);
 
-    // ISS data
-    issShader.setVec3("light.position", sunlight.Position);
-
-    issShader.setVec4("light.ambient", glm::vec4(sunlight.Ambient, 1.0f));
-    issShader.setVec4("light.diffuse", glm::vec4(sunlight.Diffuse, 1.0f));
-    issShader.setVec4("light.specular", glm::vec4(sunlight.Specular, 1.0f));
+    // ---- ISS data ----
+    // ------------------
+    // pointlight properties
+    issShader.setVec3("light.ambient", sunlight.Ambient);
+    issShader.setVec3("light.diffuse", sunlight.Diffuse);
+    issShader.setVec3("light.specular", sunlight.Specular);
     issShader.setFloat("light.constant", sunlight.Const);
     issShader.setFloat("light.linear", sunlight.Linear);
     issShader.setFloat("light.quadratic", sunlight.Quadratic);
 
-    issShader.setVec4("material.ambient", glm::vec4(1.0f));
-    issShader.setVec4("material.diffuse", glm::vec4(1.0f));
-    issShader.setVec4("material.specular", glm::vec4(1.0f));
-    issShader.setFloat("material.shininess", 64.0f);
+    issShader.setVec3("material.ambient", glm::vec3(1.0f));
+    issShader.setVec3("material.diffuse", glm::vec3(1.0f));
+    issShader.setVec3("material.specular", glm::vec3(1.0f));
+    issShader.setFloat("material.shininess", 1024.0f);
 
     issPos = glm::vec3(earth.Position.x+5, earth.Position.y, earth.Position.z);
 
@@ -280,6 +278,8 @@ int main() {
 
         // THE ISS
         issShader.use();
+        issShader.setVec3("light.position", sunlight.Position);
+
         glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
         issShader.setMat4("projection", projection);
         issShader.setMat4("view", cam.getViewMatrix());
@@ -287,13 +287,12 @@ int main() {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, issPos);
         // changing the ISS's position so it rotates around the Earth: k(r*cos() + a, r*sin() + b); y: making the ISS go up and down
-        model = glm::rotate(model, glm::radians((float)glfwGetTime()*(-50.005f)), glm::vec3(0.0f, 1.0f, 0.0f));
-        issPos = glm::vec3(5*cos(glm::radians(glfwGetTime()*20)) + earth.Position.x, sin(glm::radians(glfwGetTime()*20)), 5*sin(glm::radians(glfwGetTime()*20)) + earth.Position.z);
-        //        model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians((float)glfwGetTime()*(-9.005f)), glm::vec3(0.0f, 1.0f, 0.0f));
+//        issPos = glm::vec3(5*cos(glm::radians(glfwGetTime()*10)) + earth.Position.x, sin(glm::radians(glfwGetTime()*20)), 5*sin(glm::radians(glfwGetTime()*10)) + earth.Position.z);
         model = glm::scale(model, glm::vec3(0.5f));
         issShader.setMat4("model", model);
 
-        issShader.setVec3("ViewPos", cam.Position);
+        setSpotlight(issShader, flashlight);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, issDiffuse);
@@ -314,14 +313,16 @@ int main() {
         sunShader.use();
         sunShader.setMat4("projection", projection);
         sunShader.setMat4("view", cam.getViewMatrix());
+        sunShader.setVec3("material.diffuse", glm::vec3(1.0f));
 
+        flashlight.Ambient = glm::vec3(1.0f);
         sun.RotationSpeed = glfwGetTime() * 2;
         sun.RevolutionSpeed = glfwGetTime() * 5;
         setUpOrbData(sun, sunShader, sunlight, flashlight);
         sunModel.Draw(sunShader);
         sunlight.Position = sun.Position;
 
-
+        flashlight.Ambient = glm::vec3(0.0f);
         orbShader.use();
         orbShader.setMat4("projection", projection);
         orbShader.setMat4("view", cam.getViewMatrix());
@@ -396,7 +397,7 @@ int main() {
 }
 
 //------------------------
-// processes all the input from the relevant keys o the keyboard
+// processes all the input
 //------------------------
 void processInput(GLFWwindow* window) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -456,23 +457,7 @@ void setUpOrbData(Orb& o, Shader& s, PointLight& pl, SpotLight& sl, bool depth) 
 
 
         // SpotLight
-        s.setVec3("spotLight.position", cam.Position);
-        s.setVec3("spotLight.direction", cam.Front);
-        s.setFloat("spotLight.cutoff", sl.Cutoff);
-        s.setFloat("spotLight.outerCutoff", sl.OuterCutoff);
-        if(flashlightOn){
-            s.setVec3("spotLight.ambient", sl.Ambient);
-            s.setVec3("spotLight.diffuse", sl.Diffuse);
-            s.setVec3("spotLight.specular", sl.Specular);
-        }
-        else { // All to 0.
-            s.setVec3("spotLight.ambient", glm::vec3(0.0f));
-            s.setVec3("spotLight.diffuse", glm::vec3(0.0f));
-            s.setVec3("spotLight.specular", glm::vec3(0.0f));
-        }
-        s.setFloat("spotLight.constant", sl.Const);
-        s.setFloat("spotLight.linear", sl.Linear);
-        s.setFloat("spotLight.quadratic", sl.Quadratic);
+        setSpotlight(s, sl);
 
 
         s.setVec3("material.ambient", o.Ambient);
@@ -689,9 +674,33 @@ unsigned loadSkybox(std::vector<std::string> &faces) {
 
     return textureID;
 }
-
+//------------------------
+// processes input from relevant keys
+//------------------------
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mod) {
     if (key == GLFW_KEY_F && action == GLFW_PRESS) {
         flashlightOn = !flashlightOn;
     }
+}
+//------------------------
+// sets and updates spotlight properites
+//------------------------
+void setSpotlight(Shader &s, SpotLight &sl) {
+    s.setVec3("spotLight.position", cam.Position);
+    s.setVec3("spotLight.direction", cam.Front);
+    s.setFloat("spotLight.cutoff", cos(glm::radians(sl.Cutoff)));
+    s.setFloat("spotLight.outerCutoff", cos(glm::radians(sl.OuterCutoff)));
+    if(flashlightOn){
+        s.setVec3("spotLight.ambient", sl.Ambient);
+        s.setVec3("spotLight.diffuse", sl.Diffuse);
+        s.setVec3("spotLight.specular", sl.Specular);
+    }
+    else { // All to 0.
+        s.setVec3("spotLight.ambient", glm::vec3(0.0f));
+        s.setVec3("spotLight.diffuse", glm::vec3(0.0f));
+        s.setVec3("spotLight.specular", glm::vec3(0.0f));
+    }
+    s.setFloat("spotLight.constant", sl.Const);
+    s.setFloat("spotLight.linear", sl.Linear);
+    s.setFloat("spotLight.quadratic", sl.Quadratic);
 }
