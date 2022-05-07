@@ -41,11 +41,25 @@ struct PointLight {
     float Quadratic = 0.000007;
 };
 
+struct SpotLight {
+    glm::vec3 Position = glm::vec3(0.0f, 10.0f, 0.0f);
+    glm::vec3 Ambient = glm::vec3(0.0f);
+    glm::vec3 Diffuse = glm::vec3(1.0f);
+    glm::vec3 Specular = glm::vec3(1.0f);
+    float Const = 1.0;
+    float Linear = 0.01;
+    float Quadratic = 0.001;
+    float Cutoff = 2.5f;
+    float OuterCutoff = 7.5f;
+};
+
+
 Camera cam;
 
 int SCR_WIDTH = 800, SCR_HEIGHT = 600;
 float prevX = SCR_WIDTH / 2.0;
 float prevY = SCR_HEIGHT / 2.0;
+bool flashlightOn = false;
 
 glm::vec3 issPos;
 
@@ -54,11 +68,13 @@ void processInput(GLFWwindow* window);
 void cursorPositionCallback(GLFWwindow* window, double posX, double posY);
 void scrollCallback(GLFWwindow* window, double offsetX, double offsetY);
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
-void setUpOrbData(Orb& o, Shader& s, PointLight& pl, bool depth = false);
+void setUpOrbData(Orb& o, Shader& s, PointLight& pl, SpotLight& sl, bool depth = false);
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mod);
 unsigned loadTexture(const char* path);
 unsigned int loadSkybox(std::vector<std::string> &faces);
 unsigned setUpTheISS();
 unsigned setUpTheSkybox();
+void setSpotlight(Shader &s, SpotLight &l);
 
 
 int main() {
@@ -91,6 +107,7 @@ int main() {
     glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
     glfwSetCursorPosCallback(window, cursorPositionCallback);
     glfwSetScrollCallback(window, scrollCallback);
+    glfwSetKeyCallback(window, keyCallback);
 
     // configure global opengl state
     glEnable(GL_DEPTH_TEST);
@@ -119,9 +136,10 @@ int main() {
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
 
-    // ---- POINT LIGHT ----
+    // ---- LIGHTS ----
     //----------------------
     PointLight sunlight;
+    SpotLight flashlight;
 
     // ---- MODELS ----
     //-----------------
@@ -299,7 +317,7 @@ int main() {
 
         sun.RotationSpeed = glfwGetTime() * 2;
         sun.RevolutionSpeed = glfwGetTime() * 5;
-        setUpOrbData(sun, sunShader, sunlight);
+        setUpOrbData(sun, sunShader, sunlight, flashlight);
         sunModel.Draw(sunShader);
         sunlight.Position = sun.Position;
 
@@ -310,14 +328,14 @@ int main() {
 
         // EARTH
         earth.RotationSpeed = glfwGetTime()*30;
-        setUpOrbData(earth, orbShader, sunlight);
+        setUpOrbData(earth, orbShader, sunlight, flashlight);
         earthModel.Draw(orbShader);
 
 
         // MOON
         moon.RotationSpeed = glfwGetTime() * (-10);
         moon.RevolutionSpeed = glfwGetTime() * 10.5;
-        setUpOrbData(moon, orbShader, sunlight);
+        setUpOrbData(moon, orbShader, sunlight, flashlight);
         moonModel.Draw(orbShader);
 
 
@@ -325,7 +343,7 @@ int main() {
         mercury.RotationSpeed = glfwGetTime() * 2;
         mercury.RevolutionSpeed = glfwGetTime() * 5;
         mercury.RevolutionSmallSpeed = glfwGetTime() * 30;
-        setUpOrbData(mercury, orbShader, sunlight);
+        setUpOrbData(mercury, orbShader, sunlight, flashlight);
         mercuryModel.Draw(orbShader);
 
 
@@ -333,7 +351,7 @@ int main() {
         venus.RotationSpeed = glfwGetTime() * 0.2;
         venus.RevolutionSpeed = glfwGetTime() * 2;
         venus.RevolutionSmallSpeed = glfwGetTime() * 20;
-        setUpOrbData(venus, orbShader, sunlight);
+        setUpOrbData(venus, orbShader, sunlight, flashlight);
         venusModel.Draw(orbShader);
 
 
@@ -341,7 +359,7 @@ int main() {
         mars.RotationSpeed = glfwGetTime() * 20;
         mars.RevolutionSpeed = glfwGetTime() * 3;
         mars.RevolutionSmallSpeed = glfwGetTime() * 25;
-        setUpOrbData(mars, orbShader, sunlight);
+        setUpOrbData(mars, orbShader, sunlight, flashlight);
         marsModel.Draw(orbShader);
 
 
@@ -349,7 +367,7 @@ int main() {
         jupiter.RotationSpeed = glfwGetTime() * 30;
         jupiter.RevolutionSpeed = glfwGetTime();
         jupiter.RevolutionSmallSpeed = glfwGetTime() * 20;
-        setUpOrbData(jupiter, orbShader, sunlight);
+        setUpOrbData(jupiter, orbShader, sunlight, flashlight);
         jupiterModel.Draw(orbShader);
 
         // ---- SKYBOX ----
@@ -424,17 +442,38 @@ void scrollCallback(GLFWwindow* window, double offsetX, double offsetY) {
 //------------------------
 // setting up the shader data to draw the planets and the sun
 //------------------------
-void setUpOrbData(Orb& o, Shader& s, PointLight& pl, bool depth) {
+void setUpOrbData(Orb& o, Shader& s, PointLight& pl, SpotLight& sl, bool depth) {
     // depth == true => we don't need/have these attributes
     if(!depth) {
+        // PointLight
         s.setVec3("light.position", pl.Position);
-
         s.setVec3("light.ambient", pl.Ambient);
         s.setVec3("light.diffuse", pl.Diffuse);
         s.setVec3("light.specular", pl.Specular);
         s.setFloat("light.constant", pl.Const);
         s.setFloat("light.linear", pl.Linear);
         s.setFloat("light.quadratic", pl.Quadratic);
+
+
+        // SpotLight
+        s.setVec3("spotLight.position", cam.Position);
+        s.setVec3("spotLight.direction", cam.Front);
+        s.setFloat("spotLight.cutoff", sl.Cutoff);
+        s.setFloat("spotLight.outerCutoff", sl.OuterCutoff);
+        if(flashlightOn){
+            s.setVec3("spotLight.ambient", sl.Ambient);
+            s.setVec3("spotLight.diffuse", sl.Diffuse);
+            s.setVec3("spotLight.specular", sl.Specular);
+        }
+        else { // All to 0.
+            s.setVec3("spotLight.ambient", glm::vec3(0.0f));
+            s.setVec3("spotLight.diffuse", glm::vec3(0.0f));
+            s.setVec3("spotLight.specular", glm::vec3(0.0f));
+        }
+        s.setFloat("spotLight.constant", sl.Const);
+        s.setFloat("spotLight.linear", sl.Linear);
+        s.setFloat("spotLight.quadratic", sl.Quadratic);
+
 
         s.setVec3("material.ambient", o.Ambient);
         s.setVec3("material.diffuse", o.Diffuse);
@@ -649,4 +688,10 @@ unsigned loadSkybox(std::vector<std::string> &faces) {
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     return textureID;
+}
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mod) {
+    if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+        flashlightOn = !flashlightOn;
+    }
 }
