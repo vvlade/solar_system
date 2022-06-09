@@ -4,7 +4,8 @@ Model Suncevog sistema kakvim ga je zamisljao anticki astronom Ptolomej. Zemlja 
 sve planete kruze oko imaginarne tacke koja kruzi oko Zemlje. Dodatno, ubacio sam i teksturu Internacionalne Svemirske Stanice koja kruzi oko Zemlje
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
-Resursi korisceni:
+
+-- Koriscneni resursi --
 
 Model Sunca: https://free3d.com/3d-model/sun-43982.html
 Model Zemlje : https://free3d.com/3d-model/earth-94721.html 
@@ -17,7 +18,8 @@ Tekstura skybox-a: https://opengameart.org/content/space-skybox-1
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
-Projekat sadrzi sve teme od 1. nedelje zakljucno sa 8. nedeljom, Blending, Face culling, Advanced lighting. Uz to, implementirana je jedna oblast iz grupe A - Cubemap. Nisu korisceni kodovi drugih izvora.
+Projekat sadrzi sve teme od 1. nedelje zakljucno sa 8. nedeljom, Blending, Face culling, Advanced lighting. Uz to, implementirana je jedna oblast iz grupe 
+A - Cubemap. Nisu korisceni kodovi drugih izvora.
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -25,4 +27,5 @@ Link do demonstracije:
 
 Na snimku sam ukratko prikazao projekat i izgled same scene. 
 
-Ako Vam je prevse mracna scena, uvek mozete da upalite lampu da vidite malo bolje - F                                                                    Kretanje po sceni: W - napred, S - nazad, D - desno, A - levo.
+Ako Vam je prevse mracna scena, uvek mozete da upalite lampu da vidite malo bolje - F
+Kretanje po sceni: W - napred, S - nazad, D - desno, A - levo.
