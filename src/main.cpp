@@ -372,13 +372,13 @@ int main() {
 
 //        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
-        // ---- DRAWING OBJECTS ----
-        //--------------------------
-
 //        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 //        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        
+        // ---- DRAWING OBJECTS ----
+        //--------------------------
+        
         // THE ISS
         issShader.use();
         issShader.setVec3("light.position", sunlight.Position);
