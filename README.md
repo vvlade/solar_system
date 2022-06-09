@@ -1,7 +1,7 @@
 -- Ptolomejev model Suncevog sistema --
 
 Model Suncevog sistema kakvim ga je zamisljao anticki astronom Ptolomej. Zemlja se nalazi u sredini, ostale planete, Sunce, i Mesec kruze oko nje. Takodje,
-sve planete kruze oko imaginarne tacke koja kruzi oko Zemlje. Dodatno, ubacio sam i teksturu Internacionalne Svemirske Stanice koja kruzi oko Zemlje
+sve planete kruze oko imaginarne tacke, a ta tacka kruzi oko Zemlje. Dodatno, ubacio sam i teksturu Internacionalne Svemirske Stanice koja kruzi oko Zemlje
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -29,3 +29,7 @@ Na snimku sam ukratko prikazao projekat i izgled same scene.
 
 Ako Vam je prevse mracna scena, uvek mozete da upalite lampu da vidite malo bolje - F
 Kretanje po sceni: W - napred, S - nazad, D - desno, A - levo
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+p.s. Pokusao sam da implementiram i Point shadows iz grupe B, ali nisam uspeo i nisam siguran gde je greska, pa sam taj kod ostavio kao deo izvornog koda, ali sam ga zakomentarisao
