@@ -117,6 +117,8 @@ int main() {
     Shader issShader("resources/shaders/issVS.vs", "resources/shaders/issFS.fs");
     Shader skyboxShader("resources/shaders/skyboxVS.vs", "resources/shaders/skyboxFS.fs");
     Shader orbShader("resources/shaders/someVS.vs", "resources/shaders/someFS.fs");
+//    Shader orbDepthShader("resources/shaders/orbDepthVS.vs", "resources/shaders/orbDepthFS.fs", "resources/shaders/orbDepthGS.gs");
+
 
     // ---- SKYBOX ----
     //-----------------
@@ -166,7 +168,6 @@ int main() {
     Model marsModel("resources/objects/MarsPlanet/MarsPlanet.obj");
     marsModel.SetShaderTextureNamePrefix("material.");
 
-    // FIXME: find a model that rotates correctly
     // JUPITER
     Model jupiterModel("resources/objects/Jupiter/Jupiter_v1_L3.123c7d3fa769-8754-46f9-8dde-2a1db30a7c4e/13905_Jupiter_V1_l3.obj");
     jupiterModel.SetShaderTextureNamePrefix("material.");
@@ -262,6 +263,35 @@ int main() {
 
     issPos = glm::vec3(earth.Position.x+5, earth.Position.y, earth.Position.z);
 
+//    // --- SHADOWS ---
+//    // configure depth map FBO
+//    // -----------------------
+//    const unsigned int SHADOW_WIDTH = 800, SHADOW_HEIGHT = 600;
+//    unsigned int depthMapFBO;
+//    glGenFramebuffers(1, &depthMapFBO);
+//    // create depth cubemap texture
+//    unsigned int depthCubemap;
+//    glGenTextures(1, &depthCubemap);
+//    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+//    for (unsigned int i = 0; i < 6; ++i) {
+//        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0,
+//                     GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+//    }
+//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+//    // attach depth texture as FBO's depth buffer
+//    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+//    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
+//    glDrawBuffer(GL_NONE);
+//    glReadBuffer(GL_NONE);
+//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//
+//    orbShader.use();
+//    orbShader.setInt("depthMap", 0);
+
     // rendering loop
     while(!glfwWindowShouldClose(window)) {
         // poll events
@@ -272,9 +302,82 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // TODO: set up additional data and draw the objects on the scene
+//        // --- DRAWING SHADOW MAPS ---
+//        // 0. create depth cubemap transformation matrices
+//        // -----------------------------------------------
+//        glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, 0.1f, 1000.0f);
+//        std::vector<glm::mat4> shadowTransforms;
+//        shadowTransforms.push_back(shadowProj * glm::lookAt(sunlight.Position, sunlight.Position + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+//        shadowTransforms.push_back(shadowProj * glm::lookAt(sunlight.Position, sunlight.Position + glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+//        shadowTransforms.push_back(shadowProj * glm::lookAt(sunlight.Position, sunlight.Position + glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)));
+//        shadowTransforms.push_back(shadowProj * glm::lookAt(sunlight.Position, sunlight.Position + glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)));
+//        shadowTransforms.push_back(shadowProj * glm::lookAt(sunlight.Position, sunlight.Position + glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+//        shadowTransforms.push_back(shadowProj * glm::lookAt(sunlight.Position, sunlight.Position + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+//
+//        // 1. render scene to depth cubemap
+//        // --------------------------------
+//        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+//        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+//        glClear(GL_DEPTH_BUFFER_BIT);
+//        orbDepthShader.use();
+//        for (unsigned int i = 0; i < 6; i++) {
+//            orbDepthShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
+//        }
+//        orbDepthShader.setVec3("lightPos", sunlight.Position);
+//
+//        // EARTH
+//        earth.RotationSpeed = glfwGetTime()*30;
+//        setUpOrbData(earth, orbDepthShader, sunlight, flashlight, true);
+//        earthModel.Draw(orbDepthShader);
+//
+//
+//        // MOON
+//        moon.RotationSpeed = glfwGetTime() * (-10);
+//        moon.RevolutionSpeed = glfwGetTime() * 10.5;
+//        setUpOrbData(moon, orbDepthShader, sunlight, flashlight, true);
+//        moonModel.Draw(orbDepthShader);
+
+//
+//        // MERCURY
+//        mercury.RotationSpeed = glfwGetTime() * 2;
+//        mercury.RevolutionSpeed = glfwGetTime() * 5;
+//        mercury.RevolutionSmallSpeed = glfwGetTime() * 30;
+//        setUpOrbData(mercury, orbDepthShader, sunlight, flashlight, true);
+//        mercuryModel.Draw(orbDepthShader);
+//
+//
+//        // VENUS
+//        venus.RotationSpeed = glfwGetTime() * 0.2;
+//        venus.RevolutionSpeed = glfwGetTime() * 2;
+//        venus.RevolutionSmallSpeed = glfwGetTime() * 20;
+//        setUpOrbData(venus, orbDepthShader, sunlight, flashlight, true);
+//        venusModel.Draw(orbDepthShader);
+//
+//
+//        // MARS
+//        mars.RotationSpeed = glfwGetTime() * 20;
+//        mars.RevolutionSpeed = glfwGetTime() * 3;
+//        mars.RevolutionSmallSpeed = glfwGetTime() * 25;
+//        setUpOrbData(mars, orbDepthShader, sunlight, flashlight, true);
+//        marsModel.Draw(orbDepthShader);
+//
+//
+//        // JUPITER
+//        jupiter.RotationSpeed = glfwGetTime() * 30;
+//        jupiter.RevolutionSpeed = glfwGetTime();
+//        jupiter.RevolutionSmallSpeed = glfwGetTime() * 20;
+//        setUpOrbData(jupiter, orbDepthShader, sunlight, flashlight, true);
+//        jupiterModel.Draw(orbDepthShader);
+
+
+//        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
         // ---- DRAWING OBJECTS ----
         //--------------------------
+
+        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // THE ISS
         issShader.use();
@@ -282,13 +385,13 @@ int main() {
 
         glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
         issShader.setMat4("projection", projection);
-        issShader.setMat4("view", cam.getViewMatrix());
+        issShader.setMat4("view", cam.GetViewMatrix());
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, issPos);
         // changing the ISS's position so it rotates around the Earth: k(r*cos() + a, r*sin() + b); y: making the ISS go up and down
-        model = glm::rotate(model, glm::radians((float)glfwGetTime()*(-9.005f)), glm::vec3(0.0f, 1.0f, 0.0f));
-//        issPos = glm::vec3(5*cos(glm::radians(glfwGetTime()*10)) + earth.Position.x, sin(glm::radians(glfwGetTime()*20)), 5*sin(glm::radians(glfwGetTime()*10)) + earth.Position.z);
+        model = glm::rotate(model, glm::radians((float)glfwGetTime()*(-4.005f)), glm::vec3(0.0f, 1.0f, 0.0f));
+        issPos = glm::vec3(5*cos(glm::radians(glfwGetTime()*5)) + earth.Position.x, sin(glm::radians(glfwGetTime()*20)), 5*sin(glm::radians(glfwGetTime()*5)) + earth.Position.z);
         model = glm::scale(model, glm::vec3(0.5f));
         issShader.setMat4("model", model);
 
@@ -312,7 +415,7 @@ int main() {
         // SUN
         sunShader.use();
         sunShader.setMat4("projection", projection);
-        sunShader.setMat4("view", cam.getViewMatrix());
+        sunShader.setMat4("view", cam.GetViewMatrix());
         sunShader.setVec3("material.diffuse", glm::vec3(1.0f));
 
         flashlight.Ambient = glm::vec3(1.0f);
@@ -323,9 +426,10 @@ int main() {
         sunlight.Position = sun.Position;
 
         flashlight.Ambient = glm::vec3(0.0f);
+
         orbShader.use();
         orbShader.setMat4("projection", projection);
-        orbShader.setMat4("view", cam.getViewMatrix());
+        orbShader.setMat4("view", cam.GetViewMatrix());
 
         // EARTH
         earth.RotationSpeed = glfwGetTime()*30;
@@ -371,12 +475,15 @@ int main() {
         setUpOrbData(jupiter, orbShader, sunlight, flashlight);
         jupiterModel.Draw(orbShader);
 
+//        glActiveTexture(GL_TEXTURE0);
+//        glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+
         // ---- SKYBOX ----
         // ----------------
         glDepthFunc(GL_LEQUAL);
 
         skyboxShader.use();
-        glm::mat4 view = glm::mat4(glm::mat3(cam.getViewMatrix()));
+        glm::mat4 view = glm::mat4(glm::mat3(cam.GetViewMatrix()));
         skyboxShader.setMat4("view", view);
         skyboxShader.setMat4("projection", projection);
 
@@ -386,6 +493,7 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
         glDepthFunc(GL_LESS);
+
 
         // render image
         glfwSwapBuffers(window);
@@ -404,18 +512,18 @@ void processInput(GLFWwindow* window) {
         glfwSetWindowShouldClose(window, true);
     }
 
-    cam.cameraSpeed = 0.3f;
+    cam.MovementSpeed = 0.4f;
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        cam.processKeyboard(FORWARD);
+        cam.ProcessKeyboard(FORWARD);
     }
     else if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        cam.processKeyboard(BACKWARD);
+        cam.ProcessKeyboard(BACKWARD);
     }
     else if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        cam.processKeyboard(LEFT);
+        cam.ProcessKeyboard(LEFT);
     }
     else if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        cam.processKeyboard(RIGHT);
+        cam.ProcessKeyboard(RIGHT);
     }
 }
 //------------------------
@@ -432,13 +540,13 @@ void cursorPositionCallback(GLFWwindow* window, double posX, double posY) {
     float offsetY = prevY - posY;
     prevX = posX;
     prevY = posY;
-    cam.processMouse(offsetX, offsetY, true);
+    cam.ProcessMouseMovement(offsetX, offsetY, true);
 }
 //------------------------
 // whenever the mouse scrolls, this function is called
 //------------------------
 void scrollCallback(GLFWwindow* window, double offsetX, double offsetY) {
-    cam.processScroll(offsetY);
+    cam.ProcessMouseScroll(offsetY);
 }
 //------------------------
 // setting up the shader data to draw the planets and the sun

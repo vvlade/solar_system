@@ -51,8 +51,11 @@ uniform PointLight light;
 uniform SpotLight spotLight;
 uniform vec3 ViewPos;
 
+uniform samplerCube depthMap;
+
 vec3 CalculatePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalculateSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
+float ShadowCalculation(vec3 fragPos);
 
 void main() {
     vec3 normal = normalize(Normal);
@@ -78,7 +81,12 @@ vec3 CalculatePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewD
     float distance = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear*distance + light.quadratic*(distance*distance));
 
+
+//     float shadow = ShadowCalculation(FragPos);
+
     return (Ambient + Diffuse + Specular) * attenuation;
+
+//     return (Ambient + (1.0 - shadow) * (Diffuse + Specular)) * attenuation;
 }
 
 
@@ -113,4 +121,20 @@ vec3 CalculateSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir
     Specular *= attenuation;
 
     return (Ambient + Diffuse + Specular);
+}
+
+float ShadowCalculation(vec3 fragPos) {
+    // get vector between fragment position and light position
+    vec3 fragToLight = FragPos - light.position;
+    // ise the fragment to light vector to sample from the depth map
+    float closestDepth = texture(depthMap, fragToLight).r;
+    // it is currently in linear range between [0,1], let's re-transform it back to original depth value
+    closestDepth *= 1000.0f;
+    // now get current linear depth as the length between the fragment and light position
+    float currentDepth = length(fragToLight);
+    // test for shadows
+    float bias = 0.05; // we use a much larger bias since depth is now in [near_plane, far_plane] range
+    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
+
+    return shadow;
 }
