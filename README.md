@@ -23,7 +23,7 @@ A - Cubemap. Nisu korisceni kodovi drugih izvora.
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-Link do demonstracije: 
+Link do demonstracije: https://www.youtube.com/watch?v=W87iFR28Vxg
 
 Na snimku sam ukratko prikazao projekat i izgled same scene. 
 
