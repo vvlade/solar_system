@@ -25,5 +25,5 @@ Link do demonstracije:
 
 Na snimku sam ukratko prikazao projekat i izgled same scene. 
 
-Ako Vam je prevse mracna scena, uvek mozete da upalite lampu da vidite malo bolje(F)
+Ako Vam je prevse mracna scena, uvek mozete da upalite lampu da vidite malo bolje - F
 Kretanje po sceni: W - napred, S - nazad, D - desno, A - levo.
