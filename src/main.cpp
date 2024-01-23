@@ -69,14 +69,14 @@ void scrollCallback(GLFWwindow* window, double offsetX, double offsetY);
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void setUpOrbData(Orb& o, Shader& s, PointLight& pl, SpotLight& sl, bool depth = false);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mod);
-unsigned loadTexture(const char* path);
+auto loadTexture(const char* path) -> unsigned;
 unsigned int loadSkybox(std::vector<std::string> &faces);
-unsigned setUpTheISS();
-unsigned setUpTheSkybox();
+auto setUpTheISS() -> unsigned;
+auto setUpTheSkybox() -> unsigned;
 void setSpotlight(Shader &s, SpotLight &sl);
 
 
-int main() {
+auto main() -> int {
     // init
     int initStatus = glfwInit();
     assert(initStatus == GLFW_TRUE);
@@ -617,7 +617,7 @@ void setUpOrbData(Orb& o, Shader& s, PointLight& pl, SpotLight& sl, bool depth) 
 //------------------------
 // setting up the data and vertices to draw the ISS
 //------------------------
-unsigned setUpTheISS() {
+auto setUpTheISS() -> unsigned {
     std::vector<float> vertices = {
 //            position                 normals          texture
             -0.8f, -0.4f, 0.0f,    0.0f,  0.0f, 1.0f,   0.0f, 0.0f,  // 0
@@ -640,7 +640,7 @@ unsigned setUpTheISS() {
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
     // describing positions
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)nullptr);
     glEnableVertexAttribArray(0);
     //describing normals
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
@@ -654,7 +654,7 @@ unsigned setUpTheISS() {
 //------------------------
 // setting up the data and vertices to draw the skybox
 //------------------------
-unsigned setUpTheSkybox() {
+auto setUpTheSkybox() -> unsigned {
     std::vector<float> vertices = {
             // positions
             -1.0f,  1.0f, -1.0f,
@@ -709,7 +709,7 @@ unsigned setUpTheSkybox() {
     glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)nullptr);
     glEnableVertexAttribArray(0);
 
     return skyboxVAO;
@@ -717,7 +717,7 @@ unsigned setUpTheSkybox() {
 //------------------------
 // loading a 2D texture from resources/textures
 //------------------------
-unsigned loadTexture(const char* path) {
+auto loadTexture(const char* path) -> unsigned {
     unsigned tex0;
     int width, height, nrChannels;
     unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
